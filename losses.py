@@ -18,6 +18,7 @@ from utils import quat2mat, rotate_back, rotate_forward, tvector2mat, quaternion
 import torch.nn.functional as F
 
 
+
 class Multi_dim_Loss(nn.Module):
     def __init__(self, rescale_trans, rescale_rot, weight_point_cloud):
         super(Multi_dim_Loss, self).__init__()
