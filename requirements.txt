@@ -15,3 +15,4 @@ Pillow
 scikit-image
 sacred==0.8.2
 cupy_cuda90
+
