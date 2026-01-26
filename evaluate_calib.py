@@ -11,7 +11,8 @@
 # Modified Author: Hao Wang
 # based on https://github.com/LvXudong-HIT/LCCNet/evaluate_calib.py
 # Modified Author: Zi Wang
-# based on https://github.com/Tommy620/IFNet-master
+# based on https://github.com/Tommy620/GRNet-master
+
 import csv
 import random
 import open3d as o3
