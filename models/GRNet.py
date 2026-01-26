@@ -4,8 +4,9 @@ Jinwei Gu and Zhile Ren
 Modified version (CMRNet) by Daniele Cattaneo
 Modified version (LCCNet) by Xudong Lv
 Modified version (MRCNet) by Hao Wang
-Modified version (IFNet) by Zi Wang
+Modified version (GRNet) by Zi Wang
 """
+
 
 import torch
 import torchvision
