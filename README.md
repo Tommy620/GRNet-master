@@ -1,19 +1,19 @@
-# IFNet
+# GRNet
 
 ## Installation
 ---
 we run the project on CUDA11.8
 #### **Step 1.** Create a conda virtual environment and activate it
 ```
-conda create -n ifnet python=3.7 -y
-conda activate ifnet
+conda create -n grnet python=3.7 -y
+conda activate grnet
 conda install pytorch==1.13.1 torchvision==0.14.1 torchaudio==0.13.1 cudatoolkit=11.8 -c pytorch
 ```
 
 #### **Step 2.** Install IFNet
 ```
-git clone https://github.com/Tommy620/IFNet-master.git
-cd IFNet-master
+git clone https://github.com/Tommy620/GRNet-master.git
+cd GRNet-master
 pip install -r requirements.txt
 ```
 
