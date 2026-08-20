@@ -78,7 +78,7 @@ def config():
     # Set to True only if you use two network, the first for rotation and the second for translation
     rot_transl_separated = False
     random_initial_pose = False
-    save_log = True
+    save_log = False
     dropout = 0.0
     max_depth = 80.
     iterative_method = 'multi_range' # ['multi_range', 'single_range', 'single']
