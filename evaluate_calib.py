@@ -31,7 +31,7 @@ import torch.nn.functional as F
 import torch.nn.parallel
 import torch.utils.data
 from sacred import Experiment
-from models.IFNet import IFNet
+from models.GRNet import GRNet
 from DatasetLidarCamera import DatasetLidarCameraKittiOdometry
 
 from quaternion_distances import quaternion_distance
