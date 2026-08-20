@@ -54,7 +54,7 @@ font_EN = {'family': 'Times New Roman', 'weight': 'normal', 'size': 16}
 font_CN = {'family': 'AR PL UMing CN', 'weight': 'normal', 'size': 16}
 plt_size = 10.5
 
-ex = Experiment("IFNet-evaluate-iterative")
+ex = Experiment("GRNet-evaluate-iterative")
 ex.captured_out_filter = apply_backspaces_and_linefeeds
 
 os.environ['CUDA_VISIBLE_DEVICES'] = '0'
@@ -185,7 +185,7 @@ def main(_config, seed):
         else:
             raise TypeError("Network unknown")
         if i<10:
-            model = IFNet(input_size, use_feat_from=feat, md=md,
+            model = GRNet(input_size, use_feat_from=feat, md=md,
                              use_reflectance=_config['use_reflectance'], dropout=_config['dropout'])
             checkpoint = torch.load(weights[i])
             saved_state_dict = checkpoint['state_dict']
