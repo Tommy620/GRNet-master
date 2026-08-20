@@ -188,7 +188,7 @@ class AttentionFeatureProcessor(nn.Module):
         return quaternion, translation
 
 
-class IFNet(nn.Module):
+class GRNet(nn.Module):
     """
     Based on the MRCNet. fuse all scales of features among each branch, and features from two branches(LiDAR & Cam) interact correspondingly.
     New structures different from MRCNet:
@@ -203,7 +203,7 @@ class IFNet(nn.Module):
         """
         input: md --- maximum displacement (for correlation. default: 4), after warpping
         """
-        super(IFNet, self).__init__()
+        super(GRNet, self).__init__()
         self.toplayer = nn.Conv2d(512, 64, 1, 1, 0)
 
         self.smooth1 = nn.Conv2d(64, 64, 3, 1, 1)
