@@ -2,7 +2,7 @@
 
 **GRNet: Global Resolution LiDAR-Camera Drift Correction Using Mixed Loss Network**
 
-Official PyTorch code for GRNet, an end-to-end network for LiDAR–camera extrinsic drift correction.
+Official PyTorch code for GRNet, an end-to-end network for LiDAR–camera extrinsic drift correction. Accepted to *IEEE Sensors Journal*.
 
 ![GRNet overview](docs/teaser.png)
 
@@ -89,7 +89,7 @@ Iterative training uses `max_r` / `max_t` (e.g. 5.0°/0.5 m, 2.0°/0.2 m, 1.0°/
   author    = {Wang, Zi and Pan, Pingping and Li, You and Guo, Renzhong},
   journal   = {IEEE Sensors Journal},
   year      = {2026},
-  note      = {under review}
+  note      = {accepted}
 }
 ```
 
