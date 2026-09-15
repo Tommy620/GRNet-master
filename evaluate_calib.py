@@ -82,12 +82,19 @@ def config():
     dropout = 0.0
     max_depth = 80.
     iterative_method = 'multi_range' # ['multi_range', 'single_range', 'single']
-    output = '/home/root/work_station_02/outputs'
+    output = './outputs'
     save_image = False
     outlier_filter = True
     outlier_filter_th = 10
     out_fig_lg = 'EN' # [EN, CN]
-weights = [ '/mnt/root/work_station_02/checkpoints_f/val_seq_00/models/checkpoint_r5.00_t0.50.tar', '/mnt/root/work_station_02/checkpoints_f/val_seq_00/models/checkpoint_r2.00_t0.20.tar', '/mnt/root/work_station_02/checkpoints_f/val_seq_00/models/checkpoint_r1.00_t0.10.tar']
+    # Three-stage cascade. Override from CLI, e.g.
+    # python evaluate_calib.py with weight="['./weights/checkpoint_r5.00_t0.50.tar', ...]"
+    weight = [
+        './weights/checkpoint_r5.00_t0.50.tar',
+        './weights/checkpoint_r2.00_t0.20.tar',
+        './weights/checkpoint_r1.00_t0.10.tar',
+    ]
+weights = None
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 EPOCH = 1

@@ -17,5 +17,10 @@ env/
 # OS junk
 .DS_Store
 
+# Checkpoints (download separately)
+weights/*.tar
+weights/*.pth
+weights/*.ckpt
+
 
 
