@@ -22,8 +22,8 @@ import torch.nn.functional as F
 class Multi_dim_Loss(nn.Module):
     def __init__(self, rescale_trans, rescale_rot, weight_point_cloud):
         super(Multi_dim_Loss, self).__init__()
-        self.rescale_trans = rescale_trans #此处为1
-        self.rescale_rot = rescale_rot #此处为1
+        self.rescale_trans = rescale_trans
+        self.rescale_rot = rescale_rot
         self.transl_loss = nn.SmoothL1Loss(reduction='none')
         self.weight_point_cloud = weight_point_cloud
         self.loss = {}
@@ -53,7 +53,7 @@ class Multi_dim_Loss(nn.Module):
 
          
         mix_q_loss = torch.tensor([0.0]).to(transl_err.device)
-        bs=0 #初始化
+        bs=0
 
         mix_q_loss,bs = mixed_Q_loss(point_clouds, target_transl, target_rot, transl_err, rot_err, cam_calib, mix_q_loss, bs)
         #The function for mixed loss can be found here, click mixed_Q_loss and check~

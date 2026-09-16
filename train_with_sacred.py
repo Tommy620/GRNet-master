@@ -23,13 +23,13 @@ import mathutils
 import numpy as np
 import torch
 import torch.nn.functional as F
-import torch.nn.parallel#多GPU并行运算
+import torch.nn.parallel
 import torch.optim as optim
 import torch.utils.data
 import torch.nn as nn
 
-from sacred import Experiment#检测实验，出反馈的一个包，就是个LOG包
-from sacred.utils import apply_backspaces_and_linefeeds#规范日志格式，去掉回退符和换行符
+from sacred import Experiment
+from sacred.utils import apply_backspaces_and_linefeeds
 
 from DatasetLidarCamera import DatasetLidarCameraKittiOdometry
 from losses import Multi_dim_Loss
@@ -50,8 +50,8 @@ ex.captured_out_filter = apply_backspaces_and_linefeeds
 # noinspection PyUnusedLocal
 @ex.config
 def config():
-    checkpoints = 'pth_for_ckpt_saving'
-    data_folder = '/root/KITTI/dataset_color'
+    checkpoints = './checkpoints'
+    data_folder = './data/KITTI/dataset_color'
     use_reflectance = False
     val_sequence = '00'
     epochs = 200

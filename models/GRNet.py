@@ -265,11 +265,11 @@ class GRNet(nn.Module):
         self.layer3_lidar = self._make_layer(block, 256, layers[2], stride=2)
         self.layer4_lidar = self._make_layer(block, 512, layers[3], stride=2)
 
-        self.attcorr6 = AttentionCorrelation(512) #传入之后得到B*512*8*16的特征图
-        self.attcorr5 = AttentionCorrelation(64)  #传入之后得到B*64*8*16的特征图
-        self.attcorr4 = AttentionCorrelation(64)  #传入之后得到B*64*16*32的特征图
-        self.attcorr3 = AttentionCorrelation(64)  #传入之后得到B*64*32*64的特征图
-        self.attcorr2 = AttentionCorrelation(64)  #传入之后得到B*64*64*128的特征图
+        self.attcorr6 = AttentionCorrelation(512)  # outputs B*512*8*16
+        self.attcorr5 = AttentionCorrelation(64)   # outputs B*64*8*16
+        self.attcorr4 = AttentionCorrelation(64)   # outputs B*64*16*32
+        self.attcorr3 = AttentionCorrelation(64)   # outputs B*64*32*64
+        self.attcorr2 = AttentionCorrelation(64)   # outputs B*64*64*128
 
 
 

@@ -51,7 +51,6 @@ from torchvision import transforms
 
 plt.rcParams['axes.unicode_minus'] = False
 font_EN = {'family': 'Times New Roman', 'weight': 'normal', 'size': 16}
-font_CN = {'family': 'AR PL UMing CN', 'weight': 'normal', 'size': 16}
 plt_size = 10.5
 
 ex = Experiment("GRNet-evaluate-iterative")
@@ -62,7 +61,7 @@ os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 # noinspection PyUnusedLocal
 @ex.config
 def config():
-    data_folder = '/mnt/root/KITTI/dataset_color/'
+    data_folder = './data/KITTI/dataset_color'
     test_sequence = '00'
     use_prev_output = False
     max_t = 0.5
@@ -86,7 +85,6 @@ def config():
     save_image = False
     outlier_filter = True
     outlier_filter_th = 10
-    out_fig_lg = 'EN' # [EN, CN]
     # Three-stage cascade. Override from CLI, e.g.
     # python evaluate_calib.py with weight="['./weights/checkpoint_r5.00_t0.50.tar', ...]"
     weight = [
@@ -202,7 +200,9 @@ def main(_config, seed):
             models.append(model)
 
     if _config['save_log']:
-        log_file = f'/home/root/work_station_02/outputs/logfile/1.csv'
+        logfile_dir = os.path.join(_config['output'], 'logfile')
+        os.makedirs(logfile_dir, exist_ok=True)
+        log_file = os.path.join(logfile_dir, '1.csv')
         log_file = open(log_file, 'w')
         log_file = csv.writer(log_file)
         header = ['frame']
@@ -225,10 +225,7 @@ def main(_config, seed):
     gt_path = os.path.join(_config['output'], 'gt')
     if not os.path.exists(gt_path):
         os.makedirs(gt_path)
-    if _config['out_fig_lg'] == 'EN':
-        results_path = os.path.join(_config['output'], 'results_en')
-    elif _config['out_fig_lg'] == 'CN':
-        results_path = os.path.join(_config['output'], 'results_cn')
+    results_path = os.path.join(_config['output'], 'results')
     if not os.path.exists(results_path):
         os.makedirs(results_path)
     pred_path = os.path.join(_config['output'], 'pred')
@@ -432,7 +429,7 @@ def main(_config, seed):
         torch.cuda.synchronize()
         start = 0
         t1 = time.time()
-        net_time = 0.0  # 只累计网络前向本身，不含重投影与误差统计
+        net_time = 0.0  # network forward only, excluding re-projection and metrics
         per_model_time = []
 
         # Run model
@@ -457,7 +454,7 @@ def main(_config, seed):
                     flops = FlopCountAnalysis(models[0], inputs)
                     print("Total FLOPs: ", flops.total() / 1e9, "GFLOPs")
                     trainable_params = sum(p.numel() for p in models[0].parameters() if p.requires_grad)
-                    print(f"Trainable parameters: {trainable_params / 1e6:.2f} M")  # 可训练参数的数量，百万级
+                    print(f"Trainable parameters: {trainable_params / 1e6:.2f} M")
 
                 if _config['rot_transl_separated'] and iteration == 0:
                     T_predicted = torch.tensor([[0., 0., 0.]], device='cuda')
@@ -525,9 +522,10 @@ def main(_config, seed):
                                str(errors_rpy[iteration + 1][-1][1].item()), str(errors_rpy[iteration + 1][-1][2].item())]
 
         torch.cuda.synchronize()
-        run_time = time.time() - t1 #run_time的物理意义：一个B过完3个models的时间；
+        run_time = time.time() - t1  # time for one batch to pass through the whole cascade
 
-        # 第一帧含 cuDNN autotune / FLOPs 统计的开销，作为 warm-up 不计入平均
+        # The first frame includes cuDNN autotune and FLOP counting overhead,
+        # so it is treated as a warm-up and excluded from the average.
         is_warmup = (batch_idx == 0)
         split_str = ' + '.join(f'{t * 1000:.2f}' for t in per_model_time)
         tqdm.write(f"[frame {batch_idx}] {len(per_model_time)} models forward: {net_time * 1000:.2f} ms "
@@ -551,8 +549,8 @@ def main(_config, seed):
             log_file.writerow(log_string)
 
     if num_iters > 0:
-        net_inference_time = (total_net_time / num_iters) * 1000.0  # 毫秒，一帧过完所有模型的纯前向时间
-        inference_time = (total_time / num_iters) * 1000.0  # 毫秒，一帧的整条推理链路（含重投影与误差统计）
+        net_inference_time = (total_net_time / num_iters) * 1000.0  # ms, pure forward over all stages
+        inference_time = (total_time / num_iters) * 1000.0  # ms, full pipeline incl. re-projection and metrics
         print(f"\n===== Timing over {num_iters} frames "
               f"(batch_size={batch_size}, warm-up frame excluded) =====")
         for k in range(len(weights)):
@@ -564,9 +562,8 @@ def main(_config, seed):
 
 
 
-    # Yaw（偏航）：欧拉角向量的y轴
-    # Pitch（俯仰）：欧拉角向量的x轴
-    # Roll（翻滚）： 欧拉角向量的z轴
+    # Yaw is the y component of the Euler angle vector,
+    # Pitch the x component and Roll the z component.
     # mis_calib_input[transl_x, transl_y, transl_z, rotx, roty, rotz] Nx6
     mis_calib_input = torch.stack(mis_calib_list)[:, :, 0]
 
@@ -664,7 +661,7 @@ def main(_config, seed):
     plot_yaw = errors_rpy[:, 2]
 
     # translation error
-    fig = plt.figure(figsize=(6, 3))  # 设置图大小 figsize=(6,3)
+    fig = plt.figure(figsize=(6, 3))
     plt.title('Calibration Translation Error')'''
     plot_x = np.zeros((mis_calib_input.shape[0], 2))
     plot_x[:, 0] = mis_calib_input[:, 0].cpu().numpy()
@@ -691,14 +688,9 @@ def main(_config, seed):
     plt.plot(plot_z[:, 0], plot_z[:, 1], c='green', label='Z')
     # plt.legend(loc='best')
 
-    if _config['out_fig_lg'] == 'EN':
-        plt.xlabel('Miscalibration (m)', font_EN)
-        plt.ylabel('Absolute Error (m)', font_EN)
-        plt.legend(loc='best', prop=font_EN)
-    elif _config['out_fig_lg'] == 'CN':
-        plt.xlabel('初始标定外参偏差/米', font_CN)
-        plt.ylabel('绝对误差/米', font_CN)
-        plt.legend(loc='best', prop=font_CN)
+    plt.xlabel('Miscalibration (m)', font_EN)
+    plt.ylabel('Absolute Error (m)', font_EN)
+    plt.legend(loc='best', prop=font_EN)
 
     plt.xticks( size=plt_size)
     plt.yticks(size=plt_size)
@@ -707,7 +699,7 @@ def main(_config, seed):
     plt.close('all')
 
     errors_t = errors_t[-1].numpy()
-    errors_t = np.sort(errors_t, axis=0)[:-10] # 去掉一些异常值
+    errors_t = np.sort(errors_t, axis=0)[:-10]  # drop the largest outliers
     # plt.title('Calibration Translation Error Distribution')
     plt.hist(errors_t / 100, bins=50)
     # ax = plt.gca()
@@ -715,12 +707,8 @@ def main(_config, seed):
     # ax.set_ylabel('Number of instances')
     # ax.set_xticks([0.00, 0.25, 0.00, 0.25, 0.50])
 
-    if _config['out_fig_lg'] == 'EN':
-        plt.xlabel('Absolute Translation Error (m)', font_EN)
-        plt.ylabel('Number of instances', font_EN)
-    elif _config['out_fig_lg'] == 'CN':
-        plt.xlabel('绝对平移误差/米', font_CN)
-        plt.ylabel('实验序列数目/个', font_CN)
+    plt.xlabel('Absolute Translation Error (m)', font_EN)
+    plt.ylabel('Number of instances', font_EN)
     plt.xticks( size=plt_size)
     plt.yticks( size=plt_size)
 
@@ -728,7 +716,6 @@ def main(_config, seed):
     plt.close('all')
 
     # rotation error
-    # fig = plt.figure(figsize=(6, 3))  # 设置图大小 figsize=(6,3)
     # plt.title('Calibration Rotation Error')
     plot_pitch = np.zeros((mis_calib_input.shape[0], 2))
     plot_pitch[:, 0] = mis_calib_input[:, 3].cpu().numpy() * (180.0 / 3.141592)
@@ -750,24 +737,15 @@ def main(_config, seed):
     plot_yaw = plot_yaw[::N_interval]
     plot_roll = plot_roll[::N_interval]
 
-    # Yaw（偏航）：欧拉角向量的y轴
-    # Pitch（俯仰）：欧拉角向量的x轴
-    # Roll（翻滚）： 欧拉角向量的z轴
+    # Yaw is the y component of the Euler angle vector,
+    # Pitch the x component and Roll the z component.
 
-    if _config['out_fig_lg'] == 'EN':
-        plt.plot(plot_yaw[:, 0], plot_yaw[:, 1], c='red', label='Yaw(Y)')
-        plt.plot(plot_pitch[:, 0], plot_pitch[:, 1], c='blue', label='Pitch(X)')
-        plt.plot(plot_roll[:, 0], plot_roll[:, 1], c='green', label='Roll(Z)')
-        plt.xlabel('Miscalibration (°)', font_EN)
-        plt.ylabel('Absolute Error (°)', font_EN)
-        plt.legend(loc='best', prop=font_EN)
-    elif _config['out_fig_lg'] == 'CN':
-        plt.plot(plot_yaw[:, 0], plot_yaw[:, 1], c='red', label='偏航角')
-        plt.plot(plot_pitch[:, 0], plot_pitch[:, 1], c='blue', label='俯仰角')
-        plt.plot(plot_roll[:, 0], plot_roll[:, 1], c='green', label='翻滚角')
-        plt.xlabel('初始标定外参偏差/度', font_CN)
-        plt.ylabel('绝对误差/度', font_CN)
-        plt.legend(loc='best', prop=font_CN)
+    plt.plot(plot_yaw[:, 0], plot_yaw[:, 1], c='red', label='Yaw(Y)')
+    plt.plot(plot_pitch[:, 0], plot_pitch[:, 1], c='blue', label='Pitch(X)')
+    plt.plot(plot_roll[:, 0], plot_roll[:, 1], c='green', label='Roll(Z)')
+    plt.xlabel('Miscalibration (°)', font_EN)
+    plt.ylabel('Absolute Error (°)', font_EN)
+    plt.legend(loc='best', prop=font_EN)
 
     plt.xticks(size=plt_size)
     plt.yticks(size=plt_size)
@@ -775,23 +753,21 @@ def main(_config, seed):
     plt.close('all')
 
     errors_r = errors_r[-1].numpy()
-    errors_r = np.sort(errors_r, axis=0)[:-10] # 去掉一些异常值
+    errors_r = np.sort(errors_r, axis=0)[:-10]  # drop the largest outliers
     # np.savetxt('rot_error.txt', arr_, fmt='%0.8f')
     print('max rotation_error: {}'.format(max(errors_r)))
     plt.title('Calibration Rotation Error Distribution')
-    plt.hist(errors_r, bins=100,range=(0,0.5))#画直方图来显示数据的分布情况，error_r旋转误差的序列，100个柱子，小于0或者大于0.5的数据会被丢弃
+    # Histogram of the rotation error over 100 bins; samples outside [0, 0.5] are discarded.
+    plt.hist(errors_r, bins=100,range=(0,0.5))
 
-    if _config['out_fig_lg'] == 'EN':
-        plt.xlabel('Absolute Rotation Error (°)', font_EN)
-        plt.ylabel('Number of instances', font_EN)
-    elif _config['out_fig_lg'] == 'CN':
-        plt.xlabel('绝对旋转误差/度', font_CN)
-        plt.ylabel('实验序列数目/个', font_CN)
+    plt.xlabel('Absolute Rotation Error (°)', font_EN)
+    plt.ylabel('Number of instances', font_EN)
     plt.savefig(os.path.join(results_path, 'rotation_error_distribution.png'))
     plt.close('all')
 
 
     if _config["save_name"] is not None:
+        os.makedirs('./results_for_paper', exist_ok=True)
         torch.save(torch.stack(errors_t).cpu().numpy(), f'./results_for_paper/{_config["save_name"]}_errors_t')
         torch.save(torch.stack(errors_r).cpu().numpy(), f'./results_for_paper/{_config["save_name"]}_errors_r')
         torch.save(torch.stack(errors_t2).cpu().numpy(), f'./results_for_paper/{_config["save_name"]}_errors_t2')

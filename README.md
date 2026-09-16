@@ -75,11 +75,23 @@ python evaluate_calib.py with data_folder=/path/to/KITTI/dataset_color \
 
 ## Training
 
-Change `data_folder` and `checkpoints` in `train_with_sacred.py` before running:
+Sequence 00 is held out for testing, the remaining sequences are used for training and validation:
 ```
-python train_with_sacred.py
+python train_with_sacred.py with data_folder=/path/to/KITTI/dataset_color \
+  checkpoints=./checkpoints
 ```
-Iterative training uses `max_r` / `max_t` (e.g. 5.0°/0.5 m, 2.0°/0.2 m, 1.0°/0.1 m).
+
+The cascade is trained one stage at a time by lowering `max_r` / `max_t`, each stage starting
+from the weights of the previous, coarser one:
+```
+python train_with_sacred.py with data_folder=/path/to/KITTI/dataset_color max_r=5.0 max_t=0.5
+python train_with_sacred.py with data_folder=/path/to/KITTI/dataset_color max_r=2.0 max_t=0.2 \
+  weights=<checkpoint of the 5.0/0.5 stage>
+python train_with_sacred.py with data_folder=/path/to/KITTI/dataset_color max_r=1.0 max_t=0.1 \
+  weights=<checkpoint of the 2.0/0.2 stage>
+```
+
+Checkpoints are written to `<checkpoints>/val_seq_<val_sequence>/models/`.
 
 ## Citation
 

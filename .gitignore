@@ -22,8 +22,10 @@ weights/*.tar
 weights/*.pth
 weights/*.ckpt
 
-# Local notes / paper source (not part of the public code)
-no_github_files/
+# Outputs
+outputs/
+results_for_paper/
+checkpoints/
 
 
 
