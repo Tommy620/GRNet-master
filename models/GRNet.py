@@ -156,38 +156,6 @@ class AttentionCorrelation(nn.Module):
         return output_features
 
 
-class AttentionFeatureProcessor(nn.Module):
-    def __init__(self, input_dim, fc_hidden_dim, output_dim):
-        super(AttentionFeatureProcessor, self).__init__()
-        # Fully connected layers
-        self.fc1 = nn.Linear(input_dim, fc_hidden_dim)
-        self.fc2_quaternion = nn.Linear(fc_hidden_dim, 4)  # Quaternion
-        self.fc2_translation = nn.Linear(fc_hidden_dim, 3)  # Translation
-
-    def forward(self, attention_outputs):
-        """
-        Args:
-            attention_outputs: List of attention features from different resolutions
-                               [(B, C, H1, W1), (B, C, H2, W2), ...]
-        Returns:
-            quaternion: (B, 4)
-            translation: (B, 3)
-        """
-
-        flattened_features = [
-            feature.reshape(feature.size(0), -1)  # (B, C*H*W)
-            for feature in attention_outputs
-        ]
-        concatenated_features = torch.cat(flattened_features, dim=1)  # (B, total_features)
-
-        # Pass through fully connected layers
-        hidden = torch.relu(self.fc1(concatenated_features))
-        quaternion = self.fc2_quaternion(hidden)
-        translation = self.fc2_translation(hidden)
-
-        return quaternion, translation
-
-
 class GRNet(nn.Module):
     """
     Based on the MRCNet. fuse all scales of features among each branch, and features from two branches(LiDAR & Cam) interact correspondingly.
